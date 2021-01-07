@@ -30,7 +30,7 @@ module testbench;
         $dumpfile("testbench.vcd");
         $dumpvars(0, testbench);
 
-        sel <= op_ROx;
+        sel <= op_ROXx;
         A <= 0;
         B <= 0;
 

@@ -495,29 +495,29 @@ module ALU #(parameter N=8) (
             op_ROXx: if (N == 8) begin
                 if (in_B[7] == shift_LEFT) begin
                     case (in_B[5:0])
-                        0:                   begin r_X <= in_A;                                                                   r_XNZVC[bitpos_C] <= r_XNZVC[bitpos_X]; end
-                        1,10,19,28,37,46,55: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[7:0], r_XNZVC[bitpos_X]};                r_XNZVC[bitpos_C] <= in_A[7];           end
-                        2,11,20,29,38,47,56: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[6:0], r_XNZVC[bitpos_X], in_A[7:7]};     r_XNZVC[bitpos_C] <= in_A[6];           end
-                        3,12,21,30,39,48,57: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[5:0], r_XNZVC[bitpos_X], in_A[7:6]};     r_XNZVC[bitpos_C] <= in_A[5];           end
-                        4,13,22,31,40,49,58: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[4:0], r_XNZVC[bitpos_X], in_A[7:5]};     r_XNZVC[bitpos_C] <= in_A[4];           end
-                        5,14,23,32,41,50,59: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[3:0], r_XNZVC[bitpos_X], in_A[7:4]};     r_XNZVC[bitpos_C] <= in_A[3];           end
-                        6,15,24,33,42,51,60: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[2:0], r_XNZVC[bitpos_X], in_A[7:3]};     r_XNZVC[bitpos_C] <= in_A[2];           end
-                        7,16,25,34,43,52,61: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[1:0], r_XNZVC[bitpos_X], in_A[7:2]};     r_XNZVC[bitpos_C] <= in_A[1];           end
-                        8,17,26,35,44,53,62: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[0:0], r_XNZVC[bitpos_X], in_A[7:1]};     r_XNZVC[bitpos_C] <= in_A[0];           end
-                        9,18,27,36,45,54,63: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {r_XNZVC[bitpos_X], in_A[7:0]};                r_XNZVC[bitpos_C] <= r_XNZVC[bitpos_X]; end
+                        0:                   begin r_X <= in_A;                                                     r_XNZVC[bitpos_C] <= in_X;      end
+                        1,10,19,28,37,46,55: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[7:0], in_X};               r_XNZVC[bitpos_C] <= in_A[7];   end
+                        2,11,20,29,38,47,56: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[6:0], in_X, in_A[7:7]};    r_XNZVC[bitpos_C] <= in_A[6];   end
+                        3,12,21,30,39,48,57: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[5:0], in_X, in_A[7:6]};    r_XNZVC[bitpos_C] <= in_A[5];   end
+                        4,13,22,31,40,49,58: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[4:0], in_X, in_A[7:5]};    r_XNZVC[bitpos_C] <= in_A[4];   end
+                        5,14,23,32,41,50,59: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[3:0], in_X, in_A[7:4]};    r_XNZVC[bitpos_C] <= in_A[3];   end
+                        6,15,24,33,42,51,60: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[2:0], in_X, in_A[7:3]};    r_XNZVC[bitpos_C] <= in_A[2];   end
+                        7,16,25,34,43,52,61: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[1:0], in_X, in_A[7:2]};    r_XNZVC[bitpos_C] <= in_A[1];   end
+                        8,17,26,35,44,53,62: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_A[0:0], in_X, in_A[7:1]};    r_XNZVC[bitpos_C] <= in_A[0];   end
+                        9,18,27,36,45,54,63: begin {r_XNZVC[bitpos_X],r_X[7:0]} <= {in_X, in_A[7:0]};               r_XNZVC[bitpos_C] <= in_X;      end
                     endcase
                 end else begin
                     case (in_B[5:0])
-                        0:                   begin r_X <= in_A;                                                                   r_XNZVC[bitpos_C] <= r_XNZVC[bitpos_X]; end
-                        1,10,19,28,37,46,55: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {r_XNZVC[bitpos_X], in_A[7:0]};                r_XNZVC[bitpos_C] <= in_A[0];           end
-                        2,11,20,29,38,47,56: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[0:0], r_XNZVC[bitpos_X], in_A[7:1]};     r_XNZVC[bitpos_C] <= in_A[1];           end
-                        3,12,21,30,39,48,57: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[1:0], r_XNZVC[bitpos_X], in_A[7:2]};     r_XNZVC[bitpos_C] <= in_A[2];           end
-                        4,13,22,31,40,49,58: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[2:0], r_XNZVC[bitpos_X], in_A[7:3]};     r_XNZVC[bitpos_C] <= in_A[3];           end
-                        5,14,23,32,41,50,59: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[3:0], r_XNZVC[bitpos_X], in_A[7:4]};     r_XNZVC[bitpos_C] <= in_A[4];           end
-                        6,15,24,33,42,51,60: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[4:0], r_XNZVC[bitpos_X], in_A[7:5]};     r_XNZVC[bitpos_C] <= in_A[5];           end
-                        7,16,25,34,43,52,61: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[5:0], r_XNZVC[bitpos_X], in_A[7:6]};     r_XNZVC[bitpos_C] <= in_A[6];           end
-                        8,17,26,35,44,53,62: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[6:0], r_XNZVC[bitpos_X], in_A[7:7]};     r_XNZVC[bitpos_C] <= in_A[7];           end
-                        9,18,27,36,45,54,63: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[7:0], r_XNZVC[bitpos_X]};                r_XNZVC[bitpos_C] <= r_XNZVC[bitpos_X]; end
+                        0:                   begin r_X <= in_A;                                                     r_XNZVC[bitpos_C] <= in_X;      end
+                        1,10,19,28,37,46,55: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_X, in_A[7:0]};               r_XNZVC[bitpos_C] <= in_A[0];   end
+                        2,11,20,29,38,47,56: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[0:0], in_X, in_A[7:1]};    r_XNZVC[bitpos_C] <= in_A[1];   end
+                        3,12,21,30,39,48,57: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[1:0], in_X, in_A[7:2]};    r_XNZVC[bitpos_C] <= in_A[2];   end
+                        4,13,22,31,40,49,58: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[2:0], in_X, in_A[7:3]};    r_XNZVC[bitpos_C] <= in_A[3];   end
+                        5,14,23,32,41,50,59: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[3:0], in_X, in_A[7:4]};    r_XNZVC[bitpos_C] <= in_A[4];   end
+                        6,15,24,33,42,51,60: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[4:0], in_X, in_A[7:5]};    r_XNZVC[bitpos_C] <= in_A[5];   end
+                        7,16,25,34,43,52,61: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[5:0], in_X, in_A[7:6]};    r_XNZVC[bitpos_C] <= in_A[6];   end
+                        8,17,26,35,44,53,62: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[6:0], in_X, in_A[7:7]};    r_XNZVC[bitpos_C] <= in_A[7];   end
+                        9,18,27,36,45,54,63: begin {r_X[7:0],r_XNZVC[bitpos_X]} <= {in_A[7:0], in_X};               r_XNZVC[bitpos_C] <= in_X;      end
                     endcase
                 end
                 r_XNZVC[bitpos_N] <= r_X[N-1];
@@ -527,8 +527,142 @@ module ALU #(parameter N=8) (
                     r_chg_XNZVC <= 5'b01111;
                 else
                     r_chg_XNZVC <= 5'b11111;
-
+            end else if (N == 16) begin
+                if (in_B[7] == shift_LEFT) begin
+                    case (in_B[5:0])
+                        0:              begin r_X <= in_A;                                                          r_XNZVC[bitpos_C] <= in_X;      end
+                        1,18,35,52:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[15:0], in_X};                  r_XNZVC[bitpos_C] <= in_A[15];  end
+                        2,19,36,53:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[14:0], in_X, in_A[15:15]};     r_XNZVC[bitpos_C] <= in_A[14];  end
+                        3,20,37,54:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[13:0], in_X, in_A[15:14]};     r_XNZVC[bitpos_C] <= in_A[13];  end
+                        4,21,38,55:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[12:0], in_X, in_A[15:13]};     r_XNZVC[bitpos_C] <= in_A[12];  end
+                        5,22,39,56:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[11:0], in_X, in_A[15:12]};     r_XNZVC[bitpos_C] <= in_A[11];  end
+                        6,23,40,57:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[10:0], in_X, in_A[15:11]};     r_XNZVC[bitpos_C] <= in_A[10];  end
+                        7,24,41,58:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[9:0], in_X, in_A[15:10]};      r_XNZVC[bitpos_C] <= in_A[9];   end
+                        8,25,42,59:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[8:0], in_X, in_A[15:9]};       r_XNZVC[bitpos_C] <= in_A[8];   end
+                        9,26,43,60:     begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[7:0], in_X, in_A[15:8]};       r_XNZVC[bitpos_C] <= in_A[7];   end
+                        10,27,44,61:    begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[6:0], in_X, in_A[15:7]};       r_XNZVC[bitpos_C] <= in_A[6];   end
+                        11,28,45,62:    begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[5:0], in_X, in_A[15:6]};       r_XNZVC[bitpos_C] <= in_A[5];   end
+                        12,29,46,63:    begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[4:0], in_X, in_A[15:5]};       r_XNZVC[bitpos_C] <= in_A[4];   end
+                        13,30,47:       begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[3:0], in_X, in_A[15:4]};       r_XNZVC[bitpos_C] <= in_A[3];   end
+                        14,31,48:       begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[2:0], in_X, in_A[15:3]};       r_XNZVC[bitpos_C] <= in_A[2];   end
+                        15,32,49:       begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[1:0], in_X, in_A[15:2]};       r_XNZVC[bitpos_C] <= in_A[1];   end
+                        16,33,50:       begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_A[0:0], in_X, in_A[15:1]};       r_XNZVC[bitpos_C] <= in_A[0];   end
+                        17,34,51:       begin {r_XNZVC[bitpos_X],r_X[15:0]} <= {in_X, in_A[15:0]};                  r_XNZVC[bitpos_C] <= in_X;      end
+                    endcase
+                end else begin
+                    case (in_B[5:0])
+                        0:              begin r_X <= in_A;                                                          r_XNZVC[bitpos_C] <= in_X;      end
+                        1,18,35,52:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_X, in_A[15:0]};                  r_XNZVC[bitpos_C] <= in_A[0];   end
+                        2,19,36,53:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[0:0], in_X, in_A[15:1]};       r_XNZVC[bitpos_C] <= in_A[1];   end
+                        3,20,37,54:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[1:0], in_X, in_A[15:2]};       r_XNZVC[bitpos_C] <= in_A[2];   end
+                        4,21,38,55:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[2:0], in_X, in_A[15:3]};       r_XNZVC[bitpos_C] <= in_A[3];   end
+                        5,22,39,56:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[3:0], in_X, in_A[15:4]};       r_XNZVC[bitpos_C] <= in_A[4];   end
+                        6,23,40,57:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[4:0], in_X, in_A[15:5]};       r_XNZVC[bitpos_C] <= in_A[5];   end
+                        7,24,41,58:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[5:0], in_X, in_A[15:6]};       r_XNZVC[bitpos_C] <= in_A[6];   end
+                        8,25,42,59:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[6:0], in_X, in_A[15:7]};       r_XNZVC[bitpos_C] <= in_A[7];   end
+                        9,26,43,60:     begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[7:0], in_X, in_A[15:8]};       r_XNZVC[bitpos_C] <= in_A[8];   end
+                        10,27,44,61:    begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[8:0], in_X, in_A[15:9]};       r_XNZVC[bitpos_C] <= in_A[9];   end
+                        11,28,45,62:    begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[9:0], in_X, in_A[15:10]};      r_XNZVC[bitpos_C] <= in_A[10];  end
+                        12,29,46,63:    begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[10:0], in_X, in_A[15:11]};     r_XNZVC[bitpos_C] <= in_A[11];  end
+                        13,30,47:       begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[11:0], in_X, in_A[15:12]};     r_XNZVC[bitpos_C] <= in_A[12];  end
+                        14,31,48:       begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[12:0], in_X, in_A[15:13]};     r_XNZVC[bitpos_C] <= in_A[13];  end
+                        15,32,49:       begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[13:0], in_X, in_A[15:14]};     r_XNZVC[bitpos_C] <= in_A[14];  end
+                        16,33,50:       begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[14:0], in_X, in_A[15:15]};     r_XNZVC[bitpos_C] <= in_A[15];  end
+                        17,34,51:       begin {r_X[15:0],r_XNZVC[bitpos_X]} <= {in_A[15:0], in_X};                  r_XNZVC[bitpos_C] <= in_X;      end
+                    endcase
+                end
+                r_XNZVC[bitpos_N] <= r_X[N-1];
+                r_XNZVC[bitpos_Z] <= r_X[N-1:0] == {N{1'b0}};
+                r_XNZVC[bitpos_V] <= 1'b0;
+                if (in_B[5:0] == 0)
+                    r_chg_XNZVC <= 5'b01111;
+                else
+                    r_chg_XNZVC <= 5'b11111;
+            end else if (N == 32) begin
+                if (in_B[7] == shift_LEFT) begin
+                    case (in_B[5:0])
+                        0:      begin r_X <= in_A;                                                          r_XNZVC[bitpos_C] <= in_X;      end
+                        1,34:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[31:0], in_X};                  r_XNZVC[bitpos_C] <= in_A[31];  end
+                        2,35:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[30:0], in_X, in_A[31:31]};     r_XNZVC[bitpos_C] <= in_A[30];  end
+                        3,36:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[29:0], in_X, in_A[31:30]};     r_XNZVC[bitpos_C] <= in_A[29];  end
+                        4,37:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[28:0], in_X, in_A[31:29]};     r_XNZVC[bitpos_C] <= in_A[28];  end
+                        5,38:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[27:0], in_X, in_A[31:28]};     r_XNZVC[bitpos_C] <= in_A[27];  end
+                        6,39:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[26:0], in_X, in_A[31:27]};     r_XNZVC[bitpos_C] <= in_A[26];  end
+                        7,40:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[25:0], in_X, in_A[31:26]};     r_XNZVC[bitpos_C] <= in_A[25];  end
+                        8,41:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[24:0], in_X, in_A[31:25]};     r_XNZVC[bitpos_C] <= in_A[24];  end
+                        9,42:   begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[23:0], in_X, in_A[31:24]};     r_XNZVC[bitpos_C] <= in_A[23];  end
+                        10,43:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[22:0], in_X, in_A[31:23]};     r_XNZVC[bitpos_C] <= in_A[22];  end
+                        11,44:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[21:0], in_X, in_A[31:22]};     r_XNZVC[bitpos_C] <= in_A[21];  end
+                        12,45:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[20:0], in_X, in_A[31:21]};     r_XNZVC[bitpos_C] <= in_A[20];  end
+                        13,46:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[19:0], in_X, in_A[31:20]};     r_XNZVC[bitpos_C] <= in_A[19];  end
+                        14,47:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[18:0], in_X, in_A[31:19]};     r_XNZVC[bitpos_C] <= in_A[18];  end
+                        15,48:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[17:0], in_X, in_A[31:18]};     r_XNZVC[bitpos_C] <= in_A[17];  end
+                        16,49:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[16:0], in_X, in_A[31:17]};     r_XNZVC[bitpos_C] <= in_A[16];  end
+                        17,50:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[15:0], in_X, in_A[31:16]};     r_XNZVC[bitpos_C] <= in_A[15];  end
+                        18,51:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[14:0], in_X, in_A[31:15]};     r_XNZVC[bitpos_C] <= in_A[14];  end
+                        19,52:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[13:0], in_X, in_A[31:14]};     r_XNZVC[bitpos_C] <= in_A[13];  end
+                        20,53:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[12:0], in_X, in_A[31:13]};     r_XNZVC[bitpos_C] <= in_A[12];  end
+                        21,54:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[11:0], in_X, in_A[31:12]};     r_XNZVC[bitpos_C] <= in_A[11];  end
+                        22,55:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[10:0], in_X, in_A[31:11]};     r_XNZVC[bitpos_C] <= in_A[10];  end
+                        23,56:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[9:0], in_X, in_A[31:10]};      r_XNZVC[bitpos_C] <= in_A[9];   end
+                        24,57:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[8:0], in_X, in_A[31:9]};       r_XNZVC[bitpos_C] <= in_A[8];   end
+                        25,58:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[7:0], in_X, in_A[31:8]};       r_XNZVC[bitpos_C] <= in_A[7];   end
+                        26,59:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[6:0], in_X, in_A[31:7]};       r_XNZVC[bitpos_C] <= in_A[6];   end
+                        27,60:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[5:0], in_X, in_A[31:6]};       r_XNZVC[bitpos_C] <= in_A[5];   end
+                        28,61:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[4:0], in_X, in_A[31:5]};       r_XNZVC[bitpos_C] <= in_A[4];   end
+                        29,62:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[3:0], in_X, in_A[31:4]};       r_XNZVC[bitpos_C] <= in_A[3];   end
+                        30,63:  begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[2:0], in_X, in_A[31:3]};       r_XNZVC[bitpos_C] <= in_A[2];   end
+                        31:     begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[1:0], in_X, in_A[31:2]};       r_XNZVC[bitpos_C] <= in_A[1];   end
+                        32:     begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_A[0:0], in_X, in_A[31:1]};       r_XNZVC[bitpos_C] <= in_A[0];   end
+                        33:     begin {r_XNZVC[bitpos_X],r_X[31:0]} <= {in_X, in_A[31:0]};                  r_XNZVC[bitpos_C] <= in_X;      end
+                    endcase
+                end else begin
+                    case (in_B[5:0])
+                        0:      begin r_X <= in_A;                                                         r_XNZVC[bitpos_C] <= in_X;       end
+                        1,34:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_X, in_A[31:0]};                 r_XNZVC[bitpos_C] <= in_A[0];    end
+                        2,35:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[0:0], in_X, in_A[31:1]};      r_XNZVC[bitpos_C] <= in_A[1];    end
+                        3,36:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[1:0], in_X, in_A[31:2]};      r_XNZVC[bitpos_C] <= in_A[2];    end
+                        4,37:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[2:0], in_X, in_A[31:3]};      r_XNZVC[bitpos_C] <= in_A[3];    end
+                        5,38:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[3:0], in_X, in_A[31:4]};      r_XNZVC[bitpos_C] <= in_A[4];    end
+                        6,39:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[4:0], in_X, in_A[31:5]};      r_XNZVC[bitpos_C] <= in_A[5];    end
+                        7,40:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[5:0], in_X, in_A[31:6]};      r_XNZVC[bitpos_C] <= in_A[6];    end
+                        8,41:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[6:0], in_X, in_A[31:7]};      r_XNZVC[bitpos_C] <= in_A[7];    end
+                        9,42:   begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[7:0], in_X, in_A[31:8]};      r_XNZVC[bitpos_C] <= in_A[8];    end
+                        10,43:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[8:0], in_X, in_A[31:9]};      r_XNZVC[bitpos_C] <= in_A[9];    end
+                        11,44:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[9:0], in_X, in_A[31:10]};     r_XNZVC[bitpos_C] <= in_A[10];   end
+                        12,45:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[10:0], in_X, in_A[31:11]};    r_XNZVC[bitpos_C] <= in_A[11];   end
+                        13,46:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[11:0], in_X, in_A[31:12]};    r_XNZVC[bitpos_C] <= in_A[12];   end
+                        14,47:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[12:0], in_X, in_A[31:13]};    r_XNZVC[bitpos_C] <= in_A[13];   end
+                        15,48:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[13:0], in_X, in_A[31:14]};    r_XNZVC[bitpos_C] <= in_A[14];   end
+                        16,49:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[14:0], in_X, in_A[31:15]};    r_XNZVC[bitpos_C] <= in_A[15];   end
+                        17,50:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[15:0], in_X, in_A[31:16]};    r_XNZVC[bitpos_C] <= in_A[16];   end
+                        18,51:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[16:0], in_X, in_A[31:17]};    r_XNZVC[bitpos_C] <= in_A[17];   end
+                        19,52:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[17:0], in_X, in_A[31:18]};    r_XNZVC[bitpos_C] <= in_A[18];   end
+                        20,53:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[18:0], in_X, in_A[31:19]};    r_XNZVC[bitpos_C] <= in_A[19];   end
+                        21,54:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[19:0], in_X, in_A[31:20]};    r_XNZVC[bitpos_C] <= in_A[20];   end
+                        22,55:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[20:0], in_X, in_A[31:21]};    r_XNZVC[bitpos_C] <= in_A[21];   end
+                        23,56:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[21:0], in_X, in_A[31:22]};    r_XNZVC[bitpos_C] <= in_A[22];   end
+                        24,57:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[22:0], in_X, in_A[31:23]};    r_XNZVC[bitpos_C] <= in_A[23];   end
+                        25,58:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[23:0], in_X, in_A[31:24]};    r_XNZVC[bitpos_C] <= in_A[24];   end
+                        26,59:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[24:0], in_X, in_A[31:25]};    r_XNZVC[bitpos_C] <= in_A[25];   end
+                        27,60:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[25:0], in_X, in_A[31:26]};    r_XNZVC[bitpos_C] <= in_A[26];   end
+                        28,61:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[26:0], in_X, in_A[31:27]};    r_XNZVC[bitpos_C] <= in_A[27];   end
+                        29,62:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[27:0], in_X, in_A[31:28]};    r_XNZVC[bitpos_C] <= in_A[28];   end
+                        30,63:  begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[28:0], in_X, in_A[31:29]};    r_XNZVC[bitpos_C] <= in_A[29];   end
+                        31:     begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[29:0], in_X, in_A[31:30]};    r_XNZVC[bitpos_C] <= in_A[30];   end
+                        32:     begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[30:0], in_X, in_A[31:31]};    r_XNZVC[bitpos_C] <= in_A[31];   end
+                        33:     begin {r_X[31:0],r_XNZVC[bitpos_X]} <= {in_A[31:0], in_X};                 r_XNZVC[bitpos_C] <= in_X;       end
+                    endcase
+                end
+                r_XNZVC[bitpos_N] <= r_X[N-1];
+                r_XNZVC[bitpos_Z] <= r_X[N-1:0] == {N{1'b0}};
+                r_XNZVC[bitpos_V] <= 1'b0;
+                if (in_B[5:0] == 0)
+                    r_chg_XNZVC <= 5'b01111;
+                else
+                    r_chg_XNZVC <= 5'b11111;
             end
+
 
         endcase
     end
