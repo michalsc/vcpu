@@ -30,7 +30,7 @@ module testbench;
         $dumpfile("testbench.vcd");
         $dumpvars(0, testbench);
 
-        sel <= op_ADDX;
+        sel <= op_ROx;
         A <= 0;
         B <= 0;
 
@@ -41,8 +41,8 @@ module testbench;
         @(posedge clk)
         
         r_X <= XNZVC[bitpos_X];
-        A <= 1;
-        B <= 0;
+        A <= 'h8ff;
+        B <= 'h84;
 
         reset <= 1; #1 reset <= 0;
 
@@ -50,7 +50,6 @@ module testbench;
         @(posedge clk)
 
         r_X <= XNZVC[bitpos_X]; #1;
-        A <= 32'h7fffffff;
         B <= 32'h00000010;
 
         reset <= 1; #1 reset <= 0;
@@ -59,8 +58,7 @@ module testbench;
         @(posedge clk)
 
         r_X <= XNZVC[bitpos_X]; #1;
-        A <= 32'hf0000000;
-        B <= 32'h80000000;
+        B <= 32'h00000001;
 
         reset <= 1; #1 reset <= 0;
 
@@ -68,8 +66,7 @@ module testbench;
         @(posedge clk)
 
         r_X <= XNZVC[bitpos_X]; #1;
-        A <= 0;
-        B <= 0;
+        B <= 3;
 
         reset <= 1; #1 reset <= 0;
 
@@ -77,8 +74,7 @@ module testbench;
         @(posedge clk)
 
         r_X <= XNZVC[bitpos_X]; #1;
-        A <= 0;
-        B <= 1;
+        B <= 5;
 
         reset <= 1; #1 reset <= 0;
         
@@ -86,8 +82,7 @@ module testbench;
         @(posedge clk)
 
         r_X <= XNZVC[bitpos_X]; #1;
-        A <= 32'h7fffffff;
-        B <= 32'h00000010;
+        B <= 19;
 
         reset <= 1; #1 reset <= 0;
 
@@ -95,8 +90,7 @@ module testbench;
         @(posedge clk)
 
         r_X <= XNZVC[bitpos_X]; #1;
-        A <= 32'hf0000000;
-        B <= 32'h80000000;
+        B <= 8;
 
         reset <= 1; #1 reset <= 0;
 
