@@ -1,5 +1,0 @@
-{
-    "verilog.linting.linter": "iverilog",
-    "verilog.ctags.path": "/usr/local/bin/ctags",
-    "editor.fontFamily": "cascadia mono"
-}
