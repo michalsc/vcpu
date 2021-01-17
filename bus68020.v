@@ -13,7 +13,7 @@
 module BUS_68020(
     output [2:0]    FC,     // Function codes, three-state
     output [31:0]   A,      // Address bus, three-state
-    input /*inout*/ [31:0]    D,      // Data bus, three-state
+    inout [31:0]    D,      // Data bus, three-state
     output [1:0]    SIZ,    // Transfer size, three-state
     input           nCDIS,  // Emulator support
 
@@ -72,7 +72,7 @@ module BUS_68020(
     assign nRMC = r_RMC;
     assign nAS = r_AS;
     assign nDS = r_DS;
-    assign nDBEN = r_DBEN & r_AltDBEN;
+    assign nDBEN = (r_BusState == BS_GRANTED || r_BusState == BS_RESET) ? 'bZ : (r_DBEN & r_AltDBEN);
 
     assign nBG = r_BG;
     assign nIPEND = r_IPEND;
@@ -112,10 +112,18 @@ module BUS_68020(
     parameter BS_READ_S0 = 5'd02;
     parameter BS_READ_S2 = 5'd03;
     parameter BS_READ_S4 = 5'd04;
-    
     parameter BS_READ_S1 = 5'd02;
     parameter BS_READ_S3 = 5'd03;
     parameter BS_READ_S5 = 5'd04;
+
+    parameter BS_WRITE_S0 = 5'd05;
+    parameter BS_WRITE_S2 = 5'd06;
+    parameter BS_WRITE_S4 = 5'd07;
+    parameter BS_WRITE_S1 = 5'd05;
+    parameter BS_WRITE_S3 = 5'd06;
+    parameter BS_WRITE_S5 = 5'd07;
+
+    parameter BS_GRANTED = 5'd08;
 
     parameter DSACK_8Bit = 2'b10;
     parameter DSACK_16Bit = 2'b01;
@@ -159,20 +167,46 @@ module BUS_68020(
                 end
             end
 
+            BS_GRANTED: begin
+                r_BG <= 'b0;
+                
+            end
+
             BS_IDLE: begin
-                if (r_BReq == BR_READ) begin
-                    /* BS_READ_S0 */
-                    r_OCS <= 'b0;
-                    r_ECS <= 'b0;
-                    r_A <= r_AddrReq;
-                    r_ATmp <= r_AddrReq;
-                    r_RnW <= 'b1;
+                if (nBR) begin
+                    r_BusAltState <= BS_GRANTED;
+                    r_BusState <= BS_GRANTED;
+                    r_FC <= 3'bZZZ;
+                    r_A <= {32{1'bZ}};
+                    r_D <= {32{1'bZ}};
+                    r_SIZ <= 2'bZ;
+                    r_RnW <= 1'bZ;
+                end else begin
                     r_DBEN <= 'b1;
-                    r_BusState <= BS_READ_S2;
-                    r_BusAltState <= BS_READ_S1;
-                    r_SIZ <= r_SizeReq;
+                    if (r_BReq == BR_READ) begin
+                        /* BS_READ_S0 */
+                        r_OCS <= 'b0;
+                        r_ECS <= 'b0;
+                        r_A <= r_AddrReq;
+                        r_ATmp <= r_AddrReq;
+                        r_RnW <= 'b1;
+                        r_BusState <= BS_READ_S2;
+                        r_BusAltState <= BS_READ_S1;
+                        r_SIZ <= r_SizeReq;
+                    end
+                    else if (r_BReq == BR_WRITE) begin
+                        /* BS_READ_S0 */
+                        r_OCS <= 'b0;
+                        r_ECS <= 'b0;
+                        r_A <= r_AddrReq;
+                        r_ATmp <= r_AddrReq;
+                        r_RnW <= 'b0;
+                        r_BusState <= BS_WRITE_S2;
+                        r_BusAltState <= BS_WRITE_S1;
+                        r_SIZ <= r_SizeReq;
+                    end
+                    else r_BusAltState <= BS_IDLE;
                 end
-                else r_BusAltState <= BS_IDLE;
             end
 
             BS_READ_S0: begin
@@ -387,6 +421,192 @@ module BUS_68020(
                     endcase
                 end
             end
+
+            BS_WRITE_S0: begin
+                r_ECS <= 'b0;
+                r_RnW <= 'b0;
+                r_DBEN <= 'b1;
+                r_A <= r_ATmp;
+                r_BusState <= BS_WRITE_S2;
+                r_BusAltState <= BS_WRITE_S1;
+            end
+
+            BS_WRITE_S2: begin
+                r_OCS <= 1'b1;
+                r_ECS <= 1'b1;
+                r_DBEN <= 'b0;
+                r_BusState <= BS_WRITE_S4;
+                r_BusAltState <= BS_WRITE_S3;
+
+                case (r_SIZ)
+                    SIZ_1: r_D <= { r_Data[7:0], r_Data[7:0], r_Data[7:0], r_Data[7:0] };
+                    SIZ_2: begin
+                        if (r_A[0] == 'b0)
+                            r_D <= { r_Data[15:0], r_Data[15:0] };
+                        else
+                            r_D <= { r_Data[15:8], r_Data[15:8], r_Data[7:0], r_Data[15:8] };
+                    end
+                    SIZ_3: begin
+                        if (r_A[1:0] == 'b00)
+                            r_D <= { r_Data[23:0], r_Data[31:24] };
+                        else if (r_A[1:0] == 'b01)
+                            r_D <= { r_Data[23:16], r_Data[23:0] };
+                        else if (r_A[1:0] == 'b10)
+                            r_D <= { r_Data[23:8], r_Data[23:8] };
+                        else
+                            r_D <= { r_Data[23:16], r_Data[23:16], r_Data[15:8], r_Data[23:16] };
+                    end
+                    SIZ_4: begin
+                        if (r_A[1:0] == 'b00)
+                            r_D <= r_Data;
+                        else if (r_A[1:0] == 'b01)
+                            r_D <= { r_Data[31:24], r_Data[31:8] };
+                        else if (r_A[1:0] == 'b10)
+                            r_D <= { r_Data[31:16], r_Data[31:16] };
+                        else
+                            r_D <= { r_Data[31:24], r_Data[31:24], r_Data[23:16], r_Data[31:24] };
+                    end
+                endcase
+            end
+
+            BS_WRITE_S4: begin
+                if (r_Latched) begin
+                    case (r_SIZ)
+                        SIZ_4: begin
+                            if (nDSACK == DSACK_32Bit) begin
+                                if (A[1:0] == 2'b00) begin
+                                    r_BusState <= BS_IDLE;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else if (A[1:0] == 2'b01) begin
+                                    r_SIZ <= SIZ_1;
+                                    r_ATmp <= r_ATmp + 3;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else if (A[1:0] == 2'b10) begin
+                                    r_SIZ <= SIZ_2;
+                                    r_ATmp <= r_ATmp + 2;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else begin
+                                    r_SIZ <= SIZ_3;
+                                    r_ATmp <= r_ATmp + 1;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                            end
+                            else if (nDSACK == DSACK_16Bit) begin
+                                if (A[0] == 0) begin
+                                    r_SIZ <= SIZ_2;
+                                    r_ATmp <= r_ATmp + 2;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end else begin
+                                    r_SIZ <= SIZ_3;
+                                    r_ATmp <= r_ATmp + 1;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                            end
+                            else begin
+                                r_SIZ <= SIZ_3;
+                                r_ATmp <= r_ATmp + 1;
+                                r_BusState <= BS_WRITE_S0;
+                                r_BusAltState <= BS_WRITE_S5;
+                            end
+                        end
+                        SIZ_3: begin
+                            if (nDSACK == DSACK_32Bit) begin
+                                if (A[1:0] == 2'b00) begin
+                                    r_BusState <= BS_IDLE;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else if (A[1:0] == 2'b01) begin
+                                    r_BusState <= BS_IDLE;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else if (A[1:0] == 2'b10) begin
+                                    r_SIZ <= SIZ_1;
+                                    r_ATmp <= r_ATmp + 2;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else begin
+                                    r_SIZ <= SIZ_2;
+                                    r_ATmp <= r_ATmp + 1;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                            end
+                            else if (nDSACK == DSACK_16Bit) begin
+                                if (A[0] == 0) begin
+                                    r_SIZ <= SIZ_1;
+                                    r_ATmp <= r_ATmp + 2;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end else begin
+                                    r_SIZ <= SIZ_2;
+                                    r_ATmp <= r_ATmp + 1;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                            end
+                            else begin
+                                r_SIZ <= SIZ_2;
+                                r_ATmp <= r_ATmp + 1;
+                                r_BusState <= BS_WRITE_S0;
+                                r_BusAltState <= BS_WRITE_S5;
+                            end
+                        end
+                        SIZ_2: begin
+                            if (nDSACK == DSACK_32Bit) begin
+                                if (A[1:0] == 2'b00) begin
+                                    r_BusState <= BS_IDLE;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else if (A[1:0] == 2'b01) begin
+                                    r_BusState <= BS_IDLE;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else if (A[1:0] == 2'b10) begin
+                                    r_BusState <= BS_IDLE;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                                else begin
+                                    r_SIZ <= SIZ_1;
+                                    r_ATmp <= r_ATmp + 1;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                            end
+                            else if (nDSACK == DSACK_16Bit) begin
+                                if (A[0] == 0) begin
+                                    r_BusState <= BS_IDLE;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end else begin
+                                    r_SIZ <= SIZ_1;
+                                    r_ATmp <= r_ATmp + 1;
+                                    r_BusState <= BS_WRITE_S0;
+                                    r_BusAltState <= BS_WRITE_S5;
+                                end
+                            end
+                            else begin
+                                r_SIZ <= SIZ_1;
+                                r_ATmp <= r_ATmp + 1;
+                                r_BusState <= BS_WRITE_S0;
+                                r_BusAltState <= BS_WRITE_S5;
+                            end
+                        end
+                        SIZ_1: begin
+                            r_BusState <= BS_IDLE;
+                            r_BusAltState <= BS_WRITE_S5;
+                        end
+                    endcase
+                end
+            end
+
             endcase
         end
 
@@ -398,6 +618,11 @@ module BUS_68020(
                 r_AS <= 'bZ;
                 r_DS <= 'bZ;
                 r_Latched <= 'b0;
+            end
+
+            BS_GRANTED: begin
+                r_AS <= 'bZ;
+                r_DS <= 'bZ;
             end
 
             BS_READ_S1: begin
@@ -422,6 +647,32 @@ module BUS_68020(
                 if (r_BusState == BS_IDLE)
                     r_A <= {32{1'bZ}};
             end
+
+            BS_WRITE_S1: begin
+                r_AS <= 'b0;
+                r_AltDBEN <= 'b0;
+                r_Latched <= 'b0;
+            end
+
+            BS_WRITE_S3: begin
+                r_DS <= 'b0;
+                r_AltDBEN <= 'b1;
+                if (nDSACK != DSACK_Wait) begin
+                    r_Latched <= 'b1;
+                end
+            end
+
+            BS_WRITE_S5: begin
+                r_DS <= 'b1;
+                r_AS <= 'b1;
+                r_AltDBEN <= 'b1;
+                r_Latched <= 'b0;
+                if (r_BusState == BS_IDLE) begin
+                    r_A <= {32{1'bZ}};
+                    r_D <= {32{1'bZ}};
+                end
+            end
+
         endcase
     end
 
