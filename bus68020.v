@@ -70,9 +70,9 @@ module BUS_68020(
     assign nECS = r_ECS | CLK;
     assign RnW = r_RnW;
     assign nRMC = r_RMC;
-    assign nAS = r_AS;
-    assign nDS = r_DS;
-    assign nDBEN = (r_BusState == BS_GRANTED || r_BusState == BS_RESET) ? 'bZ : (r_DBEN & r_AltDBEN);
+    assign nAS = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 'bZ : r_AS;
+    assign nDS = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 'bZ : r_DS;
+    assign nDBEN = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 'bZ : (r_DBEN & r_AltDBEN);
 
     assign nBG = r_BG;
     assign nIPEND = r_IPEND;
@@ -92,6 +92,7 @@ module BUS_68020(
     reg [2:0] r_BReq = 'd0;
     reg [31:0] r_Data = 'd0;
     reg [31:0] r_AddrReq = 'd0;
+    reg [2:0] r_FCReq = 'd0;
     reg [1:0] r_SizeReq = 'd0;
     reg [1:0] r_DSACK = 'b0;
     reg r_Latched;
@@ -123,7 +124,9 @@ module BUS_68020(
     parameter BS_WRITE_S3 = 5'd06;
     parameter BS_WRITE_S5 = 5'd07;
 
-    parameter BS_GRANTED = 5'd08;
+    parameter BS_GRANTING = 5'd08;
+    parameter BS_GRANTED = 5'd09;
+
 
     parameter DSACK_8Bit = 2'b10;
     parameter DSACK_16Bit = 2'b01;
@@ -167,15 +170,40 @@ module BUS_68020(
                 end
             end
 
-            BS_GRANTED: begin
+            BS_GRANTING: begin
                 r_BG <= 'b0;
+                if (nBGACK == 'b0) begin
+                    r_Delay <= 'd1;
+                    r_BusState <= BS_GRANTED;
+                    r_BusAltState <= BS_GRANTED;
+                end
+                else if (nBR == 'b1) begin
+                    r_BusState <= BS_IDLE;
+                    r_BusAltState <= BS_IDLE;
+                end
+            end
 
+            BS_GRANTED: begin
+                if (r_Delay == 0) begin
+                    r_BG <= 'b1;
+                    if (nBR == 'b0) 
+                        r_BG <= 'b0;
+                end
+                else
+                    r_Delay <= r_Delay - 'b1;
+                
+
+                if (nBGACK != 'b0) begin
+                    r_BusState <= BS_IDLE;
+                    r_BusAltState <= BS_IDLE;
+                end
             end
 
             BS_IDLE: begin
-                if (nBR) begin
-                    r_BusAltState <= BS_GRANTED;
-                    r_BusState <= BS_GRANTED;
+                r_FC <= 'bZZZ;
+                if (nBR == 0) begin
+                    r_BusAltState <= BS_GRANTING;
+                    r_BusState <= BS_GRANTING;
                     r_FC <= 3'bZZZ;
                     r_A <= {32{1'bZ}};
                     r_D <= {32{1'bZ}};
@@ -188,6 +216,7 @@ module BUS_68020(
                         r_OCS <= 'b0;
                         r_ECS <= 'b0;
                         r_A <= r_AddrReq;
+                        r_FC <= r_FCReq;
                         r_ATmp <= r_AddrReq;
                         r_RnW <= 'b1;
                         r_BusState <= BS_READ_S2;
@@ -199,6 +228,7 @@ module BUS_68020(
                         r_OCS <= 'b0;
                         r_ECS <= 'b0;
                         r_A <= r_AddrReq;
+                        r_FC <= r_FCReq;
                         r_ATmp <= r_AddrReq;
                         r_RnW <= 'b0;
                         r_BusState <= BS_WRITE_S2;
@@ -214,6 +244,7 @@ module BUS_68020(
                 r_RnW <= 'b1;
                 r_DBEN <= 'b1;
                 r_A <= r_ATmp;
+                r_FC <= r_FCReq;
                 r_BusState <= BS_READ_S2;
                 r_BusAltState <= BS_READ_S1;
             end
@@ -620,9 +651,9 @@ module BUS_68020(
                 r_Latched <= 'b0;
             end
 
-            BS_GRANTED: begin
-                r_AS <= 'bZ;
-                r_DS <= 'bZ;
+            BS_IDLE: begin
+                r_AS <= 'b1;
+                r_DS <= 'b1;
             end
 
             BS_READ_S1: begin
