@@ -7,89 +7,48 @@
     with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-`include "./alu.v"
-`include "./vcpu.v"
+`include "./bus68020.v"
+
 `timescale 1ns/1ps
 
 module testbench;
  
-    `include "vcpu.vh"
-
-    reg reset = 1;
+    reg reset = 'bZ;
     reg clk = 1;
-    reg [3:0] sel = 0; 
-    reg [31:0] A = 0;
-    reg [31:0] B = 0;
-    wire [31:0] X;
-    wire [4:0] chg_XNZVC;
+    reg [1:0] dsack = 2'b11;
+    wire [31:0] D;
 
-    reg r_X = 0;
-    wire [4:0] XNZVC;
-
-    VCPU CPU(
-        .in_RESET(reset),
-        .in_CLK(clk)
+    BUS_68020 V020(
+        .nRESET(reset),
+        .CLK(clk),
+        .nDSACK(dsack),
+        .D(D)
     );
 
-    ALU #(.N(32)) ALU_32(
-        .in_CLK(clk),
-        .in_A(A[31:0]),
-        .in_B(B[31:0]),
-        .in_OP(sel),
-        .in_X(r_X),
-        .out_XNZVC(XNZVC),
-        .out_XNZVC_chg(chg_XNZVC),
-        .out_RES(X[31:0])
-    );
-    
     initial begin
         $dumpfile("testbench.vcd");
         $dumpvars(0, testbench);
 
-        #0.3; reset <= 1'b0;
-        #7.14; reset <= 1'b1;
+        #5 reset = 0;
+        #40 reset = 1;
+        #20 V020.r_BReq = 2;
+        V020.r_AddrReq = 32'h0123451;
+        V020.r_Data = 32'hDEADBEEF;
+        V020.r_SizeReq = 0;
+        #2 V020.r_BReq = 0;
 
-        sel = op_ROXx;
-        A = 0;
-        B = 0;
+        #10 dsack = 'b01;
+        #2 dsack = 'b11;
 
-        #10;
-        
-        r_X = XNZVC[bitpos_X];
-        A = 'h8ff;
-        B = 'h84;
+        #10 dsack = 'b01;
+        #2 dsack = 'b11;
 
-        #10;
-        
-        r_X = XNZVC[bitpos_X];
-        B = 32'h00000010;
+        #10 dsack = 'b01;
+        #2 dsack = 'b11;
 
-        #10;
+        #10 dsack = 'b01;
+        #2 dsack = 'b11;
 
-        r_X = XNZVC[bitpos_X];
-        B = 32'h00000001;
-
-        #10;
-
-        r_X = XNZVC[bitpos_X];
-        B = 3;
-
-        #10;
-
-        r_X = XNZVC[bitpos_X];
-        B = 5;
-        
-        #10;
-
-        r_X = XNZVC[bitpos_X]; #1;
-        B = 19;
-
-        #10;
-
-        r_X = XNZVC[bitpos_X]; #1;
-        B = 8;
-
-        #10;
 
         #500 $finish;
     end
