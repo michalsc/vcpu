@@ -169,7 +169,7 @@ module BUS_68020(
 
             BS_GRANTED: begin
                 r_BG <= 'b0;
-                
+
             end
 
             BS_IDLE: begin
@@ -615,8 +615,8 @@ module BUS_68020(
     always @(negedge CLK) begin
         case (r_BusAltState)
             BS_RESET: begin
-                r_AS <= 'bZ;
-                r_DS <= 'bZ;
+                r_AS <= 'b1;
+                r_DS <= 'b1;
                 r_Latched <= 'b0;
             end
 
