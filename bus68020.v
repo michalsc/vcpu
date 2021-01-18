@@ -9,11 +9,12 @@
 
 `timescale 1ns/1ps
 `include "./vcpu.v"
+`include "./cache.v"
 
 module BUS_68020(
     output [2:0]    FC,     // Function codes, three-state
     output [31:0]   A,      // Address bus, three-state
-    inout [31:0]    D,      // Data bus, three-state
+    input /*inout*/ [31:0]    D,      // Data bus, three-state
     output [1:0]    SIZ,    // Transfer size, three-state
     input           nCDIS,  // Emulator support
 
@@ -80,6 +81,14 @@ module BUS_68020(
     assign nRESET = (out_RESET == 1) ? 1'bZ: 1'b0;
     assign in_RESET = (out_RESET == 1) ? nRESET : 1'b1; 
 
+    INSNCache ICache(
+        .CLK(CLK)
+    );
+
+    DATACache DCache(
+        .CLK(CLK)
+    );
+
     VCPU VCore(
         .in_CLK(CLK),
         .in_RESET(in_RESET),
@@ -89,6 +98,7 @@ module BUS_68020(
     reg [4:0] r_BusState = 'd0;
     reg [4:0] r_BusAltState = 'd0;
     reg [7:0] r_Delay;
+    reg r_BReqComplete = 'd0;
     reg [2:0] r_BReq = 'd0;
     reg [31:0] r_Data = 'd0;
     reg [31:0] r_AddrReq = 'd0;
@@ -201,6 +211,7 @@ module BUS_68020(
 
             BS_IDLE: begin
                 r_FC <= 'bZZZ;
+                r_BReqComplete <= 'b0;
                 if (nBR == 0) begin
                     r_BusAltState <= BS_GRANTING;
                     r_BusState <= BS_GRANTING;
@@ -265,6 +276,7 @@ module BUS_68020(
                             if (nDSACK == DSACK_32Bit) begin
                                 if (A[1:0] == 2'b00) begin
                                     r_Data <= r_LatchData;
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
@@ -317,11 +329,13 @@ module BUS_68020(
                             if (nDSACK == DSACK_32Bit) begin
                                 if (A[1:0] == 2'b00) begin
                                     r_Data[23:0] <= r_LatchData[31:8];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
                                 else if (A[1:0] == 2'b01) begin
                                     r_Data[23:0] <= r_LatchData[23:0];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
@@ -367,16 +381,19 @@ module BUS_68020(
                             if (nDSACK == DSACK_32Bit) begin
                                 if (A[1:0] == 2'b00) begin
                                     r_Data[15:0] <= r_LatchData[31:16];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
                                 else if (A[1:0] == 2'b01) begin
                                     r_Data[15:0] <= r_LatchData[23:8];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
                                 else if (A[1:0] == 2'b10) begin
                                     r_Data[15:0] <= r_LatchData[15:0];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
@@ -391,6 +408,7 @@ module BUS_68020(
                             else if (nDSACK == DSACK_16Bit) begin
                                 if (A[0] == 0) begin
                                     r_Data[15:0] <= r_LatchData[31:16];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end else begin
@@ -413,21 +431,25 @@ module BUS_68020(
                             if (nDSACK == DSACK_32Bit) begin
                                 if (A[1:0] == 2'b00) begin
                                     r_Data[7:0] <= r_LatchData[31:24];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
                                 else if (A[1:0] == 2'b01) begin
                                     r_Data[7:0] <= r_LatchData[23:16];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
                                 else if (A[1:0] == 2'b10) begin
                                     r_Data[7:0] <= r_LatchData[15:8];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
                                 else begin
                                     r_Data[7:0] <= r_LatchData[7:0];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
@@ -435,16 +457,19 @@ module BUS_68020(
                             else if (nDSACK == DSACK_16Bit) begin
                                 if (A[0] == 0) begin
                                     r_Data[7:0] <= r_LatchData[31:24];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end else begin
                                     r_Data[7:0] <= r_LatchData[23:16];
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_READ_S5;
                                 end
                             end
                             else begin
                                 r_Data[7:0] <= r_LatchData[31:24];
+                                r_BReqComplete <= 'b1;
                                 r_BusState <= BS_IDLE;
                                 r_BusAltState <= BS_READ_S5;
                             end
@@ -506,6 +531,7 @@ module BUS_68020(
                         SIZ_4: begin
                             if (nDSACK == DSACK_32Bit) begin
                                 if (A[1:0] == 2'b00) begin
+                                    r_BReqComplete <= 'b1;
                                     r_BusState <= BS_IDLE;
                                     r_BusAltState <= BS_WRITE_S5;
                                 end
@@ -552,10 +578,12 @@ module BUS_68020(
                             if (nDSACK == DSACK_32Bit) begin
                                 if (A[1:0] == 2'b00) begin
                                     r_BusState <= BS_IDLE;
+                                    r_BReqComplete <= 'b1;
                                     r_BusAltState <= BS_WRITE_S5;
                                 end
                                 else if (A[1:0] == 2'b01) begin
                                     r_BusState <= BS_IDLE;
+                                    r_BReqComplete <= 'b1;
                                     r_BusAltState <= BS_WRITE_S5;
                                 end
                                 else if (A[1:0] == 2'b10) begin
@@ -595,14 +623,17 @@ module BUS_68020(
                             if (nDSACK == DSACK_32Bit) begin
                                 if (A[1:0] == 2'b00) begin
                                     r_BusState <= BS_IDLE;
+                                    r_BReqComplete <= 'b1;
                                     r_BusAltState <= BS_WRITE_S5;
                                 end
                                 else if (A[1:0] == 2'b01) begin
                                     r_BusState <= BS_IDLE;
+                                    r_BReqComplete <= 'b1;
                                     r_BusAltState <= BS_WRITE_S5;
                                 end
                                 else if (A[1:0] == 2'b10) begin
                                     r_BusState <= BS_IDLE;
+                                    r_BReqComplete <= 'b1;
                                     r_BusAltState <= BS_WRITE_S5;
                                 end
                                 else begin
@@ -615,6 +646,7 @@ module BUS_68020(
                             else if (nDSACK == DSACK_16Bit) begin
                                 if (A[0] == 0) begin
                                     r_BusState <= BS_IDLE;
+                                    r_BReqComplete <= 'b1;
                                     r_BusAltState <= BS_WRITE_S5;
                                 end else begin
                                     r_SIZ <= SIZ_1;
@@ -632,6 +664,7 @@ module BUS_68020(
                         end
                         SIZ_1: begin
                             r_BusState <= BS_IDLE;
+                            r_BReqComplete <= 'b1;
                             r_BusAltState <= BS_WRITE_S5;
                         end
                     endcase
