@@ -56,7 +56,7 @@ module testbench;
     );
 
     initial begin
-        $readmemh("rom", rom);
+        $readmemh("rom-32bit", rom);
         $dumpfile("testbench.vcd");
         $dumpvars(0, testbench);
         
@@ -70,7 +70,7 @@ module testbench;
         for (i=0; i < 8; i++) begin
             V020.r_BReq = 1;
             V020.r_AddrReq = i;
-            V020.r_SizeReq = 0;
+            V020.r_SizeReq = 'b00;
             #2 V020.r_BReq = 0;
             @(posedge V020.r_BReqComplete);
             Data <= V020.r_Data;
