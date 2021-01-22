@@ -8,7 +8,8 @@
 */
 
 module INSNCache (
-    input   CLK
+    input           CLK,
+    input [31:0]    Ain
 );
     /* 
         16KB instruction cache - 4-way set of 256 entries, 20 bit tag
@@ -24,13 +25,27 @@ module INSNCache (
 
         TAG - same as above
         WAY - selects one of 256 ways
-        xxxx - lowest 4 bits are "don't care"
+        xxxx - lowest 4 bits are the position within cache line
 
         set 0..3 selected based on PLRU-m (DOI: 10.1145/986537.986601)
     */
 
     reg [148:0] cache [0:3][0:255];
     reg [3:0] plru[0:255];
+    reg [2:0] cnt;
+
+    localparam CL_TagHi = 148;
+    localparam CL_TagLo = 129;
+    localparam CL_V = 128;
+    localparam CL_L0Hi = 127;
+    localparam CL_L0Lo = 96;
+    localparam CL_L1Hi = 95;
+    localparam CL_L1Lo = 64;
+    localparam CL_L2Hi = 63;
+    localparam CL_L2Lo = 32;
+    localparam CL_L3Hi = 31;
+    localparam CL_L3Lo = 0;
+
 
     always @(posedge CLK) begin
         
@@ -56,7 +71,7 @@ module DATACache (
 
         TAG - same as above
         WAY - selects one of 256 ways
-        xxxx - lowest 4 bits are "don't care"
+        xxxx - lowest 4 bits are the position within cache line
 
         set 0..3 selected based on PLRU-m (DOI: 10.1145/986537.986601)
     */
