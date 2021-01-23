@@ -82,7 +82,10 @@ module BUS_68020(
     assign in_RESET = (out_RESET == 1) ? nRESET : 1'b1; 
 
     INSNCache ICache(
-        .CLK(CLK)
+        .CLK(CLK),
+        .nRESET(in_RESET),
+        .Ain(r_AddrReq),
+        .BR(r_BReq)
     );
 
     DATACache DCache(
