@@ -42,6 +42,7 @@ module BUS_68020(
 
     input           CLK     // Input clock
 );
+    `include "vcpu.vh"
 
     wire in_RESET;
     wire out_RESET = 1;
@@ -84,8 +85,13 @@ module BUS_68020(
     INSNCache ICache(
         .CLK(CLK),
         .nRESET(in_RESET),
-        .Ain(r_AddrReq),
-        .BR(r_BReq)
+        .BRout(r_BReq),
+        .SIZout(r_SizeReq),
+        .BRcompl_in(r_BReqComplete),
+        .Aout(r_AddrReq),
+        .Din(r_Data)
+        //.Ain(r_AddrReq),
+        //.BRin(r_BReq)
     );
 
     DATACache DCache(
@@ -102,11 +108,11 @@ module BUS_68020(
     reg [4:0] r_BusAltState = 'd0;
     reg [7:0] r_Delay;
     reg r_BReqComplete = 'd0;
-    reg [2:0] r_BReq = 'd0;
+    wire [2:0] r_BReq;
     reg [31:0] r_Data = 'd0;
-    reg [31:0] r_AddrReq = 'd0;
+    wire [31:0] r_AddrReq;
     reg [2:0] r_FCReq = 'd0;
-    reg [1:0] r_SizeReq = 'd0;
+    wire [1:0] r_SizeReq = 'd0;
     reg [1:0] r_DSACK = 'b0;
     reg r_Latched;
     reg [31:0] r_LatchData;
