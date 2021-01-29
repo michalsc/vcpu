@@ -8,13 +8,19 @@
 */
 
 `timescale 1ns/1ps
+
+`ifndef ALTERA_RESERVED_QIS
 `include "./vcpu.v"
 `include "./cache.v"
+`else
+  // The code that is used for other software
+`endif
+
 
 module BUS_68020(
     output [2:0]    FC,     // Function codes, three-state
     output [31:0]   A,      // Address bus, three-state
-    input /*inout*/ [31:0]    D,      // Data bus, three-state
+    inout [31:0]    D,      // Data bus, three-state
     output [1:0]    SIZ,    // Transfer size, three-state
     input           nCDIS,  // Emulator support
 
@@ -28,7 +34,7 @@ module BUS_68020(
     output          nDBEN,  // Data bus enable
     input [1:0]     nDSACK, // Data transfer and size ACK
 
-    input /*inout*/           nRESET, // System reset
+    inout           nRESET, // System reset
     inout           nHALT,  // Halt
     input           nBERR,  // Bus error
 
@@ -45,7 +51,7 @@ module BUS_68020(
     `include "vcpu.vh"
 
     wire in_RESET;
-    wire out_RESET = 1;
+    reg out_RESET = 1;
 
     reg [31:0] r_D;
     reg [31:0] r_A;
@@ -72,16 +78,16 @@ module BUS_68020(
     assign nECS = r_ECS | CLK;
     assign RnW = r_RnW;
     assign nRMC = r_RMC;
-    assign nAS = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 'bZ : r_AS;
-    assign nDS = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 'bZ : r_DS;
-    assign nDBEN = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 'bZ : (r_DBEN & r_AltDBEN);
+    assign nAS = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 1'bZ : r_AS;
+    assign nDS = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 1'bZ : r_DS;
+    assign nDBEN = (r_BusState == BS_GRANTED || r_BusState == BS_GRANTING|| r_BusState == BS_RESET) ? 1'bZ : (r_DBEN & r_AltDBEN);
 
     assign nBG = r_BG;
     assign nIPEND = r_IPEND;
 
     assign nRESET = (out_RESET == 1) ? 1'bZ: 1'b0;
     assign in_RESET = (out_RESET == 1) ? nRESET : 1'b1; 
-
+/*
     INSNCache ICache(
         .CLK(CLK),
         .nRESET(in_RESET),
@@ -103,29 +109,20 @@ module BUS_68020(
         .in_RESET(in_RESET),
         .out_RESET(out_RESET)
     );
-
+*/
     reg [4:0] r_BusState = 'd0;
     reg [4:0] r_BusAltState = 'd0;
     reg [7:0] r_Delay;
     reg r_BReqComplete = 'd0;
-    wire [2:0] r_BReq;
+    wire [2:0] r_BReq = 'd0;
     reg [31:0] r_Data = 'd0;
-    wire [31:0] r_AddrReq;
+    wire [31:0] r_AddrReq = 'd0;
     reg [2:0] r_FCReq = 'd0;
     wire [1:0] r_SizeReq = 'd0;
     reg [1:0] r_DSACK = 'b0;
-    reg r_Latched;
-    reg [31:0] r_LatchData;
-    reg [31:0] r_ATmp;
-
-    parameter SIZ_1 = 'b01;
-    parameter SIZ_2 = 'b10;
-    parameter SIZ_3 = 'b11;
-    parameter SIZ_4 = 'b00;
-
-    parameter BR_NONE = 'd0;
-    parameter BR_READ = 'd1;
-    parameter BR_WRITE = 'd2;
+    reg r_Latched = 'd0;
+    reg [31:0] r_LatchData = 'd0;
+    reg [31:0] r_ATmp = 'd0;
 
     parameter BS_IDLE = 5'd00;
     parameter BS_RESET = 5'd01;
@@ -146,12 +143,6 @@ module BUS_68020(
     parameter BS_GRANTING = 5'd08;
     parameter BS_GRANTED = 5'd09;
 
-
-    parameter DSACK_8Bit = 2'b10;
-    parameter DSACK_16Bit = 2'b01;
-    parameter DSACK_32Bit = 2'b00;
-    parameter DSACK_Wait = 2'b11;
-
     always @(posedge CLK) begin
         
         if (in_RESET == 0) begin
@@ -169,7 +160,6 @@ module BUS_68020(
                 r_RnW <= 1'bZ;
                 r_RMC <= 1'bZ;
                 r_DBEN <= 1'b1;
-                r_AltDBEN <= 1'b1;
 
                 r_BG <= 'b1;
                 r_IPEND <= 'b1;
@@ -181,7 +171,7 @@ module BUS_68020(
             
             BS_RESET: begin
                 if (r_Delay > 0) begin
-                    r_Delay <= r_Delay - 'd1;
+                    r_Delay <= r_Delay - 8'd1;
                 end 
                 else begin
                     r_BusState <= BS_IDLE;
@@ -209,7 +199,7 @@ module BUS_68020(
                         r_BG <= 'b0;
                 end
                 else
-                    r_Delay <= r_Delay - 'b1;
+                    r_Delay <= r_Delay - 8'b1;
                 
 
                 if (nBGACK != 'b0) begin
@@ -219,7 +209,7 @@ module BUS_68020(
             end
 
             BS_IDLE: begin
-                r_FC <= 'bZZZ;
+                r_FC <= 3'bZZZ;
                 r_BReqComplete <= 'b0;
                 if (nBR == 0) begin
                     r_BusAltState <= BS_GRANTING;
@@ -691,6 +681,7 @@ module BUS_68020(
                 r_AS <= 'b1;
                 r_DS <= 'b1;
                 r_Latched <= 'b0;
+                r_AltDBEN <= 1'b1;
             end
 
             BS_IDLE: begin
