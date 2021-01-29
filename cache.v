@@ -140,7 +140,6 @@ module INSNCache (
 	
 	wire [3:0] pos = Areq[3:0];
     wire [7:0] set = Areq[11:4];
-	wire [7:0] set_in = Ain[11:4];
     wire [19:0] tag = Areq[31:12];
 	wire [7:0] cache_addr= set;
 	
@@ -150,10 +149,10 @@ module INSNCache (
     wire [148:0] way_2 = cache_w2_data;
     wire [148:0] way_3 = cache_w3_data;
 
-    wire match_0 = way_0[CL_TagHi:CL_TagLo] == tag ? 'b1 : 'b0;
-    wire match_1 = way_1[CL_TagHi:CL_TagLo] == tag ? 'b1 : 'b0;
-    wire match_2 = way_2[CL_TagHi:CL_TagLo] == tag ? 'b1 : 'b0;
-    wire match_3 = way_3[CL_TagHi:CL_TagLo] == tag ? 'b1 : 'b0;
+    wire match_0 = way_0[CL_TagHi:CL_TagLo] == tag ? 1'b1 : 1'b0;
+    wire match_1 = way_1[CL_TagHi:CL_TagLo] == tag ? 1'b1 : 1'b0;
+    wire match_2 = way_2[CL_TagHi:CL_TagLo] == tag ? 1'b1 : 1'b0;
+    wire match_3 = way_3[CL_TagHi:CL_TagLo] == tag ? 1'b1 : 1'b0;
 
     wire valid_0 = way_0[CL_V];
     wire valid_1 = way_1[CL_V];
@@ -183,7 +182,7 @@ module INSNCache (
 				A[31:0] <= 32'hZZZZZZZZ;
 				
 				if (Areq[12] == 'b0) begin
-					Areq[12:4] <= Areq[12:4] + 'b1;
+					Areq[12:4] <= Areq[12:4] + 9'b1;
 				end else begin
 					state <= ST_IDLE;
 				end
