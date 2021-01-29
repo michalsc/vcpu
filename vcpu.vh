@@ -33,3 +33,16 @@ localparam bitpos_Z = 2;
 localparam bitpos_V = 1;
 localparam bitpos_C = 0;
 
+localparam BR_NONE = 'd0;
+localparam BR_READ = 'd1;
+localparam BR_WRITE = 'd2;
+
+localparam SIZ_1 = 'b01;
+localparam SIZ_2 = 'b10;
+localparam SIZ_3 = 'b11;
+localparam SIZ_4 = 'b00;
+
+localparam DSACK_8Bit = 2'b10;
+localparam DSACK_16Bit = 2'b01;
+localparam DSACK_32Bit = 2'b00;
+localparam DSACK_Wait = 2'b11;
