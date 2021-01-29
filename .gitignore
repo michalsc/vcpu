@@ -2,3 +2,4 @@
 testbench.vcd
 testbench.vvp
 .DS_Store
+*.bak
